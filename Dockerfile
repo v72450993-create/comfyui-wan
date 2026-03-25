@@ -14,13 +14,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         python3-pip \
         curl ffmpeg ninja-build git aria2 git-lfs wget vim \
         libgl1 libglib2.0-0 build-essential gcc && \
-    \
-    # make Python3.12 the default python & pip
     ln -sf /usr/bin/python3.12 /usr/bin/python && \
     ln -sf /usr/bin/pip3 /usr/bin/pip && \
-    \
     python3.12 -m venv /opt/venv && \
-    \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Use the virtual environment
@@ -40,15 +36,17 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         jupyter-server jupyter-server-terminals \
         ipykernel jupyterlab_code_formatter
 
+# Stage 2: Builder - Install ComfyUI and custom nodes
+FROM base AS builder
+# Use the virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
+
 # ------------------------------------------------------------
 # ComfyUI install
 # ------------------------------------------------------------
 RUN --mount=type=cache,target=/root/.cache/pip \
     /usr/bin/yes | comfy --workspace /ComfyUI install
 
-FROM base AS final
-# Make sure to use the virtual environment here too
-ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install opencv-python
 
 RUN for repo in \
@@ -96,6 +94,23 @@ RUN for repo in \
             python "/ComfyUI/custom_nodes/$repo_dir/install.py"; \
         fi; \
     done
+
+# Stage 3: Final - Runtime image
+FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04 AS final
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3.12 ffmpeg curl git aria2 git-lfs wget vim libgl1 libglib2.0-0 && \
+    ln -sf /usr/bin/python3.12 /usr/bin/python && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /ComfyUI /ComfyUI
+
+ENV PATH="/opt/venv/bin:$PATH"
 
 COPY src/start_script.sh /start_script.sh
 RUN chmod +x /start_script.sh
