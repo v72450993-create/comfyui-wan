@@ -1,5 +1,9 @@
 #!/bin/bash
 
+cat /etc/resolv.conf
+nslookup github.com
+curl -I https://github.com
+
 # 1. Wait for the network to be ready
 echo "Waiting for internet..."
 until curl -s --head https://github.com > /dev/null; do
