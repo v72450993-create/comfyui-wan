@@ -27,16 +27,14 @@ else
     echo "curl is already installed"
 fi
 
-# Start SageAttention build in the background
-echo "Starting SageAttention build..."
-(
-    export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32
-    cd /tmp/SageAttention
-    pip install -e .
-    echo "SageAttention build completed" > /tmp/sage_build_done
-) > /tmp/sage_build.log 2>&1 &
-SAGE_PID=$!
-echo "SageAttention build started in background (PID: $SAGE_PID)"
+# SageAttention should already be installed in the Docker image.
+if python -c "import sageattention" >/dev/null 2>&1; then
+    echo "✅ SageAttention is installed"
+    USE_SAGE_ATTENTION="true"
+else
+    echo "⚠️ SageAttention is not installed; starting ComfyUI without --use-sage-attention"
+    USE_SAGE_ATTENTION="false"
+fi
 
 # Set the network volume path
 NETWORK_VOLUME="/workspace"
@@ -564,7 +562,11 @@ pip install comfy-kitchen
 
 echo "▶️  Starting ComfyUI"
 
-nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen --use-sage-attention > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+if [ "$USE_SAGE_ATTENTION" = "true" ]; then
+    nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen --use-sage-attention > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+else
+    nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+fi
 
     # Counter for timeout
     counter=0
