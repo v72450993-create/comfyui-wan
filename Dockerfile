@@ -53,11 +53,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 RUN pip install opencv-python
 
-RUN git clone https://github.com/thu-ml/SageAttention.git /tmp/SageAttention && \
-    cd /tmp/SageAttention && \
-    git reset --hard 68de379 && \
-    EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32 pip install .
-
 RUN for repo in \
     https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git \
     https://github.com/kijai/ComfyUI-KJNodes.git \
@@ -120,6 +115,11 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /ComfyUI /ComfyUI
 
 ENV PATH="/opt/venv/bin:$PATH"
+
+# Clone SageAttention repository
+RUN git clone https://github.com/thu-ml/SageAttention.git /tmp/SageAttention && \
+    cd /tmp/SageAttention && \
+    git reset --hard 68de379
 
 # Setup CivitAI Downloader
 RUN git clone https://github.com/Hearmeman24/CivitAI_Downloader.git && \
