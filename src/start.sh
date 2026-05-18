@@ -64,105 +64,111 @@ WORKFLOW_DIR="$NETWORK_VOLUME/ComfyUI/user/default/workflows"
 CUSTOM_NODES_DIR="$NETWORK_VOLUME/ComfyUI/custom_nodes"
 
 if [ ! -d "$COMFYUI_DIR" ]; then
+    echo "Moving /ComfyUI to $COMFYUI_DIR..."
     mv /ComfyUI "$COMFYUI_DIR"
 else
-    echo "Directory already exists, skipping move."
+    echo "Directory $COMFYUI_DIR already exists, skipping move."
+    # If /ComfyUI exists in root, delete it to avoid confusion and save space
+    if [ -d "/ComfyUI" ] && [ "$COMFYUI_DIR" != "/ComfyUI" ]; then
+        echo "Deleting redundant /ComfyUI in root..."
+        rm -rf /ComfyUI
+    fi
 fi
 
 echo "Downloading CivitAI download script to /usr/local/bin"
 # Already installed in Dockerfile
 pip install onnxruntime-gpu &
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-WanVideoWrapper" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/kijai/ComfyUI-WanVideoWrapper.git
 else
     echo "Updating WanVideoWrapper"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-WanVideoWrapper
     git pull
 fi
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-KJNodes" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-KJNodes" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/kijai/ComfyUI-KJNodes.git
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-KJNodes
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-KJNodes
     git reset --hard 204f6d5
 else
     echo "Updating KJ Nodes"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-KJNodes
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-KJNodes
     git pull
     git reset --hard 204f6d5
 fi
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-VibeVoice" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-VibeVoice" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/wildminder/ComfyUI-VibeVoice.git
 else
     echo "Updating VibeVoice"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-VibeVoice
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-VibeVoice
     git pull
 fi
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanAnimatePreprocess" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-WanAnimatePreprocess" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/kijai/ComfyUI-WanAnimatePreprocess.git
 else
     echo "Updating WanAnimatePreprocess"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanAnimatePreprocess
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-WanAnimatePreprocess
     git pull
 fi
 
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-FSampler" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-FSampler" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/obisin/ComfyUI-FSampler.git
 else
     echo "Updating FSampler"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-FSampler
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-FSampler
     git pull
 fi
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanMoEScheduler" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-WanMoEScheduler" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/cmeka/ComfyUI-WanMoEScheduler.git
 else
     echo "Updating WanMoEScheduler"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanMoEScheduler
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-WanMoEScheduler
     git pull
 fi
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-VAE-Utils" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-VAE-Utils" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/lrzjason/ComfyUI-VAE-Utils.git
 else
     echo "Updating VAE Utils"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-VAE-Utils
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-VAE-Utils
     git pull
 fi
 
-if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-Wan22FMLF" ]; then
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes
+if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-Wan22FMLF" ]; then
+    cd $COMFYUI_DIR/custom_nodes
     git clone https://github.com/wallen0322/ComfyUI-Wan22FMLF.git
 else
     echo "Updating Wan22FMLF"
-    cd $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-Wan22FMLF
+    cd $COMFYUI_DIR/custom_nodes/ComfyUI-Wan22FMLF
     git pull
 fi
 
 
 echo "🔧 Installing KJNodes packages..."
-pip install --no-cache-dir -r $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt &
+pip install --no-cache-dir -r $COMFYUI_DIR/custom_nodes/ComfyUI-KJNodes/requirements.txt &
 KJ_PID=$!
 
 echo "🔧 Installing WanVideoWrapper packages..."
-pip install --no-cache-dir -r $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper/requirements.txt &
+pip install --no-cache-dir -r $COMFYUI_DIR/custom_nodes/ComfyUI-WanVideoWrapper/requirements.txt &
 WAN_PID=$!
 
 echo "🔧 Installing VibeVoice packages..."
-pip install --no-cache-dir -r $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-VibeVoice/requirements.txt &
+pip install --no-cache-dir -r $COMFYUI_DIR/custom_nodes/ComfyUI-VibeVoice/requirements.txt &
 VIBE_PID=$!
 
 echo "🔧 Installing WanAnimatePreprocess packages..."
-pip install --no-cache-dir -r $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanAnimatePreprocess/requirements.txt &
+pip install --no-cache-dir -r $COMFYUI_DIR/custom_nodes/ComfyUI-WanAnimatePreprocess/requirements.txt &
 WAN_ANIMATE_PID=$!
 
 
@@ -452,8 +458,8 @@ done
 
 if [ "$change_preview_method" == "true" ]; then
     echo "Updating default preview method..."
-    sed -i '/id: *'"'"'VHS.LatentPreview'"'"'/,/defaultValue:/s/defaultValue: false/defaultValue: true/' $NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-VideoHelperSuite/web/js/VHS.core.js
-    CONFIG_PATH="/ComfyUI/user/default/ComfyUI-Manager"
+    sed -i '/id: *'"'"'VHS.LatentPreview'"'"'/,/defaultValue:/s/defaultValue: false/defaultValue: true/' $COMFYUI_DIR/custom_nodes/ComfyUI-VideoHelperSuite/web/js/VHS.core.js
+    CONFIG_PATH="$COMFYUI_DIR/user/default/ComfyUI-Manager"
     CONFIG_FILE="$CONFIG_PATH/config.ini"
 
 # Ensure the directory exists
@@ -567,9 +573,9 @@ pip install comfy-kitchen
 echo "▶️  Starting ComfyUI"
 
 if [ "$USE_SAGE_ATTENTION" = "true" ]; then
-    nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen --use-sage-attention > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+    nohup python3 "$COMFYUI_DIR/main.py" --listen --use-sage-attention > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
 else
-    nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+    nohup python3 "$COMFYUI_DIR/main.py" --listen > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
 fi
 
     # Counter for timeout
