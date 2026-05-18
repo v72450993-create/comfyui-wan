@@ -31,10 +31,7 @@ fi
 echo "Starting SageAttention build..."
 (
     export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32
-    cd /tmp
-    git clone https://github.com/thu-ml/SageAttention.git
-    cd SageAttention
-    git reset --hard 68de379
+    cd /tmp/SageAttention
     pip install -e .
     echo "SageAttention build completed" > /tmp/sage_build_done
 ) > /tmp/sage_build.log 2>&1 &
@@ -69,10 +66,7 @@ else
 fi
 
 echo "Downloading CivitAI download script to /usr/local/bin"
-git clone "https://github.com/Hearmeman24/CivitAI_Downloader.git" || { echo "Git clone failed"; exit 1; }
-mv CivitAI_Downloader/download_with_aria.py "/usr/local/bin/" || { echo "Move failed"; exit 1; }
-chmod +x "/usr/local/bin/download_with_aria.py" || { echo "Chmod failed"; exit 1; }
-rm -rf CivitAI_Downloader  # Clean up the cloned repo
+# Already installed in Dockerfile
 pip install onnxruntime-gpu &
 
 if [ ! -d "$NETWORK_VOLUME/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper" ]; then

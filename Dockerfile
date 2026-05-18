@@ -112,8 +112,20 @@ COPY --from=builder /ComfyUI /ComfyUI
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY src/start_script.sh /start_script.sh
-RUN chmod +x /start_script.sh
+# Clone SageAttention repository
+RUN git clone https://github.com/thu-ml/SageAttention.git /tmp/SageAttention && \
+    cd /tmp/SageAttention && \
+    git reset --hard 68de379
+
+# Setup CivitAI Downloader
+RUN git clone https://github.com/Hearmeman24/CivitAI_Downloader.git && \
+    mv CivitAI_Downloader/download_with_aria.py /usr/local/bin/ && \
+    chmod +x /usr/local/bin/download_with_aria.py && \
+    rm -rf CivitAI_Downloader
+
+COPY src/start.sh /start.sh
+RUN chmod +x /start.sh
+
 COPY 4xLSDIR.pth /4xLSDIR.pth
 
-CMD ["/start_script.sh"]
+CMD ["/start.sh"]
