@@ -60,7 +60,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /ComfyUI /ComfyUI
 
 ENV PATH="/opt/venv/bin:$PATH"
 
