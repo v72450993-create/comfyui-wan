@@ -1,0 +1,15 @@
+.git
+.github
+.circleci
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.venv
+venv
+.idea
+.vscode
+.DS_Store
+*.log
