@@ -27,16 +27,20 @@ else
     echo "curl is already installed"
 fi
 
-# Start SageAttention build in the background
+# Build SageAttention at runtime because CI runners usually have no GPU.
 echo "Starting SageAttention build..."
-(
-    export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32
-    cd /tmp/SageAttention
-    pip install -e .
-    echo "SageAttention build completed" > /tmp/sage_build_done
-) > /tmp/sage_build.log 2>&1 &
-SAGE_PID=$!
-echo "SageAttention build started in background (PID: $SAGE_PID)"
+if [ -d "/tmp/SageAttention" ]; then
+    (
+        export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32
+        cd /tmp/SageAttention
+        pip install -e .
+    ) > /tmp/sage_build.log 2>&1 &
+    SAGE_PID=$!
+    echo "SageAttention build started in background (PID: $SAGE_PID)"
+else
+    echo "⚠️ /tmp/SageAttention not found; SageAttention will be disabled"
+    SAGE_PID=""
+fi
 
 # Set the network volume path
 NETWORK_VOLUME="/workspace"
@@ -537,24 +541,22 @@ for file in *.zip; do
     mv "$file" "${file%.zip}.safetensors"
 done
 
-# Wait for SageAttention build to complete
-echo "Waiting for SageAttention build to complete..."
-while ! [ -f /tmp/sage_build_done ]; do
-    if ps -p $SAGE_PID > /dev/null 2>&1; then
-        echo "⚙️  SageAttention build in progress, this may take up to 5 minutes."
-        sleep 5
-    else
-        # Process finished but no completion marker - check if it failed
-        if ! [ -f /tmp/sage_build_done ]; then
-            echo "⚠️  SageAttention build process ended unexpectedly. Check logs at /tmp/sage_build.log"
-            echo "Continuing with ComfyUI startup..."
-            break
-        fi
-    fi
-done
+USE_SAGE_ATTENTION="false"
 
-if [ -f /tmp/sage_build_done ]; then
-    echo "✅ SageAttention build completed successfully!"
+if [ -n "$SAGE_PID" ]; then
+    echo "Waiting for SageAttention build to complete..."
+    if wait "$SAGE_PID"; then
+        echo "✅ SageAttention build command finished"
+    else
+        echo "⚠️ SageAttention build failed. Check logs at /tmp/sage_build.log"
+    fi
+fi
+
+if python -c "import sageattention" >/dev/null 2>&1; then
+    echo "✅ SageAttention is installed and will be enabled"
+    USE_SAGE_ATTENTION="true"
+else
+    echo "⚠️ SageAttention is not available; starting ComfyUI without --use-sage-attention"
 fi
 
 pip install comfy-aimdo
@@ -564,7 +566,11 @@ pip install comfy-kitchen
 
 echo "▶️  Starting ComfyUI"
 
-nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen --use-sage-attention > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+if [ "$USE_SAGE_ATTENTION" = "true" ]; then
+    nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen --use-sage-attention > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+else
+    nohup python3 "$NETWORK_VOLUME/ComfyUI/main.py" --listen > "$NETWORK_VOLUME/comfyui_${RUNPOD_POD_ID}_nohup.log" 2>&1 &
+fi
 
     # Counter for timeout
     counter=0

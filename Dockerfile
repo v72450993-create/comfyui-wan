@@ -45,11 +45,13 @@ ENV PATH="/opt/venv/bin:$PATH"
 # ------------------------------------------------------------
 # ComfyUI install
 # ------------------------------------------------------------
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /usr/bin/yes | comfy --workspace /ComfyUI install
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /ComfyUI
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r /ComfyUI/requirements.txt
+
+RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git \
+    /ComfyUI/custom_nodes/ComfyUI-Manager
 
 RUN pip install opencv-python
 
