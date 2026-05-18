@@ -34,7 +34,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install pyyaml gdown triton comfy-cli jupyterlab jupyterlab-lsp \
         jupyter-server jupyter-server-terminals \
-        ipykernel jupyterlab_code_formatter
+        ipykernel jupyterlab_code_formatter \
+        aiohttp
 
 # Stage 2: Builder - Install ComfyUI and custom nodes
 FROM base AS builder
@@ -46,6 +47,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # ------------------------------------------------------------
 RUN --mount=type=cache,target=/root/.cache/pip \
     /usr/bin/yes | comfy --workspace /ComfyUI install
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r /ComfyUI/requirements.txt
 
 RUN pip install opencv-python
 
